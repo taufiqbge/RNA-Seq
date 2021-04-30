@@ -1,0 +1,74 @@
+##directory 
+setwd("C:/Users/owner/Desktop/deseq2_geneios/test_volcano/analysis")
+
+##library required
+
+library(ggplot2)
+library(ggrepel)
+
+## importing data from source file 
+
+x <- read.csv("0v6h_cip.csv")
+## set condition for upregulation and downregulation 
+
+x$expression = ifelse(x$pvalue < 0.05 & abs(x$log2FoldChange) >= 2, 
+                      ifelse(x$log2FoldChange> 2 ,"Up","Down"),
+                      'Stable')
+
+## save the data in txt format
+write.table(x, "C:/Users/owner/Desktop/deseq2_geneios/test_volcano/analysis/up_0v6h_cip.txt", sep="\t")
+
+###create volcano plot
+#-------------------------------------------
+
+plot_volc <- ggplot(data = x,
+            aes(x = log2FoldChange, 
+                y = -log10(pvalue), 
+                colour=expression)) +
+  
+
+  geom_text_repel(
+    #data = subset(x, pvalue<0.05 & log2FoldChange > 3.25),
+    data = subset(x, pvalue<0.05 & log2FoldChange > 3.25),
+    aes(label = ""), show.legend=F,
+    
+    size = 3, vjust=0.5) +
+    
+  
+##create various options of how the plot looks like
+#---------------------------------------------------
+  
+  geom_point(alpha=0.8, size=2.0) +
+  scale_color_manual(values=c("royalblue","grey","red2"))+
+
+  xlim(c(-9.5, 9.5)) + #range left to right 
+  geom_vline(xintercept=c(-2,2),lty=2,col="black",lwd=0.5) +
+  geom_hline(yintercept = 0.05,lty=2,col="black",lwd=0.5) +
+  labs(x="log2(fold change)",
+       y="-log10 (p-value)",
+       title="Up and downregulated genes (0vs6h-cip)")  +
+  #theme_bw(base_size=15) +
+  
+  theme_bw()+
+  theme(plot.title = element_text(angle=0, size=12, face="bold", vjust=0.5), 
+        legend.position="right", 
+        #legend.key=element_blank(),
+        #legend.key.size=unit(0.5, "cm"),
+        legend.text=element_text(size=11),
+        title=element_text(),
+        panel.grid.major=element_blank(), #Remove gridlines
+        panel.grid.minor=element_blank(), #Remove gridlines
+        
+        #legend.justification="right",
+        #legend.margin=margin(-5,-5,-5,-5),
+        #legend.box.margin=margin(-5,-5,-5,-5),
+       
+        legend.title = element_blank())
+
+##see out put 
+plot_volc
+
+## increase the point size in the right side of lengends
+plot_volc + guides(colour = guide_legend(override.aes = list(size=3.5)))
+
+
